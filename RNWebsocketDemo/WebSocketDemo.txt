@@ -1,0 +1,61 @@
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, Button } from 'react-native';
+ // Assuming you are using 'react-native-gifted-chat' for WebSocket support
+
+const WebSocketDemo = () => {
+  const [webSocket, setWebSocket] = useState(null);
+  const [message, setMessage] = useState('');
+  const [receivedMessage, setReceivedMessage] = useState('');
+
+  useEffect(() => {
+    // Initialize WebSocket connection
+    const ws = new WebSocket('ws://124.222.224.186:8800'); // Replace with your WebSocket server address
+    ws.onopen = () => {
+      console.log('===========================WebSocket connection opened============================');
+      setWebSocket(ws);
+    };
+    ws.onmessage = (event) => {
+      console.log('====================================Received message====================:', event.data);
+      setReceivedMessage(event.data);
+    };
+    ws.onerror = (error) => {
+      console.error('================================WebSocket connection error====================:', error);
+    };
+    ws.onclose = () => {
+      console.log('====================================WebSocket connection closed===========================');
+    };
+
+    // Cleanup function
+    return () => {
+      if (webSocket) {
+        webSocket.close();
+      }
+    };
+  }, []);
+
+  const sendMessage = () => {
+    if (webSocket && message.trim() !== '') {
+      webSocket.send(message.trim());
+      console.log('Sent message:', message.trim());
+      setMessage('');
+    }
+  };
+
+  return (
+    <View>
+      <TextInput
+        style={{ height: 40, borderColor: 'gray', borderWidth: 1, margin: 10, paddingHorizontal: 10 }}
+        value={message}
+        onChangeText={setMessage}
+        placeholder="Enter message"
+      />
+      <Button
+        onPress={sendMessage}
+        title="Send"
+      />
+      <Text style={{ marginTop: 20, fontSize: 16 }}>Received message: {receivedMessage}</Text>
+    </View>
+  );
+};
+
+export default WebSocketDemo;
